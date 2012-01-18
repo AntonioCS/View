@@ -115,7 +115,7 @@ class acs_view {
      * @param bool $cache
      */
     public function __construct($view = null, $allowviewfail = true) {
-        parent::__construct();
+        //parent::__construct();
 
         //Load all the path variables that the view might need
         $this->create_paths();
@@ -128,6 +128,7 @@ class acs_view {
      * 
      */
     private function create_paths() {
+	/*
         $this->_data = array(
             'uri' => $this->configData->uri,
             'web' => $this->configData->web_dir_url,
@@ -136,6 +137,7 @@ class acs_view {
             'images_dir' => $this->configData->images_dir_url,
             'flash_dir' => $this->configData->flash_dir_url
         );
+		*/
     }
 
     /**
@@ -248,7 +250,7 @@ class acs_view {
         if (isset($this->_data[$varname]))
             return $this->_data[$varname];
 
-        return parent::__get($varname);
+        //return parent::__get($varname);
     }
 
     /**
