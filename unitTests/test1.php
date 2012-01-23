@@ -1,5 +1,9 @@
 <?php
 
+/**
+*  Unit tests for Acs View
+*/
+
 if (function_exists('xdebug_disable'))
 	xdebug_disable();
 
@@ -18,11 +22,25 @@ class AcsViewTest extends PHPUnit_Framework_TestCase {
 		$this->assertInstanceOf('acs_view',$this->v);
     }
 
-	public function testSetConfig() {
-		//acs_view::$PATH = 'teste';
+    public function testHasPATH() {
+        $this->assertClassHasStaticAttribute('PATH', 'acs_view');
+    }
+
+	public function testSetConfigGetSetPath() {
+        $this->assertEquals('tpls/', $this->v->getViewPath());
+
+        $this->v->setViewPath('test');
+        $this->assertEquals('test', $this->v->getViewPath());
+
+        $this->v->setViewPath();
+        $this->assertEquals('tpls/', $this->v->getViewPath());
 	}
 
 	public function testView() {
 		//$this->v->loadview('index');
 	}
+
+    public function testIsRenderedFalse() {
+        $this->assertFalse($this->v->hasRendered());
+    }
 }
