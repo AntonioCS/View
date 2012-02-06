@@ -110,11 +110,20 @@ class acs_view {
     }
 
     /**
-    * Return hasRendered property
+    * Has the view been rendered?
+    *
     * @return bool
     */
     public function hasRendered() {
         return $this->_hasRendered;
+    }
+
+    /**
+    * Set the view as rendered
+    *
+    */
+    public function isRendered() {
+        $this->_hasRendered = true;
     }
 
     /**
@@ -170,6 +179,108 @@ class acs_view {
     */
     private function getView() {
         return $this->_view;
+    }
+
+    /**
+     * Call set() method
+     *
+     * @param string $item
+     * @param mixed $value
+     */
+    public function __set($item, $value) {
+        $this->set($item,$value);
+    }
+
+    /**
+    * Call get() method
+    *
+    * @param mixed $item
+    */
+    public function __get($item) {
+        return $this->get($item);
+    }
+
+    /**
+    * Set an item on the _data array
+    *
+    * @param mixed $item
+    * @param mixed $value
+    */
+    public function set($item,$value) {
+        $this->_data[$item] = $value;
+    }
+
+    /**
+    * Return an item from the _data array
+    *
+    * @param mixed $item Key name to get the value from
+    * @param mixed $defaultValue A default value to return in case there must be something returned
+    *
+    * @return mixed
+    */
+    public function get($item, $defaultValue = null) {
+        return isset($this->_data[$item]) ? $this->_data[$item] : $defaultValue;
+    }
+
+    /**
+     * Renders the view
+     * if $return is set to true the code will be returned
+     *
+     */
+    public function render() {
+        ob_start();
+        require($this->getView());
+        $buffer = ob_get_clean();
+
+        $this->isRendered();
+
+        return $buffer;
+    }
+
+
+    /**
+    * Array for the blocks contents
+    *
+    * @var array
+    */
+    private $_blocks = array();
+
+    private $_blocksOrder = array();
+    private $_blocksAppend = array();
+    private $_blocksFilters = array();
+
+    private $_expands = null;
+
+    public function blockStart($bname, $append = false, $filters = null) {
+        array_push($this->_blocksOrder,$bname);
+
+        if ($append)
+            $this->_blocksAppend[$bname] = true;
+
+        if ($filters)
+            $this->_blocksFilters[$bname] = $filters;
+
+        ob_start();
+    }
+
+    public function blockEnd() {
+        $buffer = ob_get_clean();
+        $bname = array_shift($this->_blocksOrder);
+
+        if (!isset($this->_blocks[$bname]))
+            $this->_blocks[$bname] = $buffer;
+        elseif (isset($this->_blocksAppend[$bname]))
+            $this->_blocks[$bname] .= $buffer;
+
+        echo $this->_blocks[$bname];
+    }
+
+    public function block($bname) {
+        return isset($this->_blocks[$bname]) ? $this->_blocks[$bname] : null;
+    }
+
+    public function expands($template) {
+        $this->_expands = $template;
     }
 }
 
