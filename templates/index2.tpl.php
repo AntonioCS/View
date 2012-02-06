@@ -3,5 +3,5 @@
 <head>
 <title><?php echo $this->title ?></title>
 </head>
-<body><?php echo $this->body ?></body>
+<body><?php echo $this->block('x') ?></body>
 </html>

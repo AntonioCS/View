@@ -1,0 +1,5 @@
+
+- Create set and get for variables - DONE
+- Create inheritance in templates
+- Create reusable blocks
+- Allow partial views to be called (not the same as blocks)
