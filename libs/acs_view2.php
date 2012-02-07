@@ -20,6 +20,7 @@ class acs_view {
                             'path' => 'tpls/'
                         );
 
+
     /**
     * Bool to check if the view has been rendered
     *
@@ -76,7 +77,7 @@ class acs_view {
     * Set the view to rendered
     *
     * @param string $view
-    * @return bool
+    * @return instance
     *
     * @throws acs_viewExceptionNoPath, acs_viewExceptionExtension, acs_viewExceptionViewNotFound
     */
@@ -106,7 +107,7 @@ class acs_view {
 
         $this->setView($viewPath);
 
-        return true;
+        return $this;
     }
 
     /**
@@ -121,9 +122,11 @@ class acs_view {
     /**
     * Set the view as rendered
     *
+    * @return instance
     */
     public function isRendered() {
         $this->_hasRendered = true;
+        return $this;
     }
 
     /**
@@ -139,9 +142,12 @@ class acs_view {
     * Set view path
     *
     * @param string|array $path
+    *
+    * @return instance
     */
     public function setPath($path) {
         $this->_config['path'] = $path;
+        return $this;
     }
 
     /**
@@ -157,9 +163,12 @@ class acs_view {
     * Set the extension for the views
     *
     * @param string $ext
+    *
+    * @return instance
     */
     public function setExt($ext) {
         $this->_config['ext'] = $ext;
+        return $this;
     }
 
 
@@ -167,9 +176,12 @@ class acs_view {
     * Set the path to the view in the private property _view
     *
     * @param string $view Full path to the view
+    *
+    * @return instance
     */
     private function setView($view) {
         $this->_view = $view;
+        return $this;
     }
 
     /**
@@ -205,9 +217,12 @@ class acs_view {
     *
     * @param mixed $item
     * @param mixed $value
+    *
+    * @return instance
     */
     public function set($item,$value) {
         $this->_data[$item] = $value;
+        return $this;
     }
 
     /**
@@ -249,6 +264,28 @@ class acs_view {
     private $_blocksAppend = array();
     private $_blocksFilters = array();
 
+    /**
+    * Place holder for the value (in blocks)
+    *
+    * @var string
+    */
+    private $_blocksValuePlaceHolder = '[_value_]';
+
+    /**
+    * Place holder for the index (in blocks)
+    *
+    * @var string
+    */
+    private $_blocksKeyPlaceHolder = '[_key_]';
+
+    public function __value() {
+        return $this->_blocksValuePlaceHolder;
+    }
+
+    public function __key() {
+        return $this->_blocksKeyPlaceHolder;
+    }
+
     private $_expands = null;
 
     public function blockStart($bname, $append = false, $filters = null) {
@@ -266,6 +303,19 @@ class acs_view {
     public function blockEnd() {
         $buffer = ob_get_clean();
         $bname = array_shift($this->_blocksOrder);
+
+        if ($this->get($bname) != null) {
+            $newBuffer = array();
+            $bk = $this->__key();
+            $bv = $this->__value();
+
+            foreach((array)$this->get($bname) as $k => $v) {
+                $newBuffer[] = str_replace(array($bk,$bv),array($k,$v),$buffer);
+            }
+
+            $buffer = implode('',$newBuffer);
+        }
+
 
         if (!isset($this->_blocks[$bname]))
             $this->_blocks[$bname] = $buffer;

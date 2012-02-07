@@ -69,13 +69,13 @@ class AcsViewTest extends PHPUnit_Framework_TestCase {
 
     public function testSuccessfulLoad() {
         $this->v->setPath('../templates/');
-        $this->assertTrue($this->v->load('index'));
+        $this->assertInstanceOf('acs_view',$this->v->load('index'));
     }
 
     public function testSuccessfulLoadPATH() {
         acs_view::$PATH = '../templates/';
         $v = new acs_view();
-        $this->assertTrue($v->load('index'));
+        $this->assertInstanceOf('acs_view',$v->load('index'));
     }
 
     public function testGetSetData() {
@@ -105,5 +105,30 @@ class AcsViewTest extends PHPUnit_Framework_TestCase {
 
         file_put_contents('/tmp/templateOutput2.test',$this->v->render());
         $this->assertFileNotEquals('/tmp/templateOutput2.test', 'templateOutput1');
+    }
+
+    public function testBlocks() {
+        $this->v->setPath('../templates/');
+        $this->v->load('bodyBlock')->render();
+
+        $this->assertEquals('Hello ',$this->v->block('x'));
+    }
+
+    public function testBlocks2() {
+        $this->v->setPath('../templates/');
+        $r = $this->v->load('bodyBlock')->set('word','World')->render();
+
+        $this->assertEquals('Hello World',$this->v->block('x'));
+    }
+
+    public function testBlocksMulti() {
+        $this->v->setPath('../templates/');
+        $r = $this->v->load('bodyBlockMultiData')
+            ->set('menu_body',array('test1','teste2'))
+            ->set('title','hello')
+            ->set('contents','World')
+            ->render();
+
+        var_dump($r);
     }
 }
