@@ -127,8 +127,10 @@ class AcsViewTest extends PHPUnit_Framework_TestCase {
             ->set('menu_body',array('test1','teste2'))
             ->set('title','hello')
             ->set('contents','World')
-            ->render();
-
+            ->render();        
+        
         var_dump($r);
+        file_put_contents('/tmp/templateBlockMultiDataOutput.test',$r);
+        $this->assertFileEquals('/tmp/templateBlockMultiDataOutput.test', 'templateBlockMultiDataOutput');
     }
 }

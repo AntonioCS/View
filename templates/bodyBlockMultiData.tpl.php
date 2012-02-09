@@ -5,10 +5,9 @@
 </head>
 <body>
 <ul id="menu">
-    <?php $this->blockStart('menu_body') ?>
-        <li><?php echo $this->__value() ?></li>
-    <?php $this->blockEnd() ?>
+<?php $this->blockStart('menu_body') ?>
+<li><?php echo $this->__value() ?></li>
+<?php $this->blockEnd() ?>
 </ul>
 <?php echo $this->contents ?></body>
 </html>
-
