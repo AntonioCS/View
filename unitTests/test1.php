@@ -124,12 +124,11 @@ class AcsViewTest extends PHPUnit_Framework_TestCase {
     public function testBlocksMulti() {
         $this->v->setPath('../templates/');
         $r = $this->v->load('bodyBlockMultiData')
-            ->set('menu_body',array('test1','teste2'))
+            ->set('menu_body',array('test1','teste2')
             ->set('title','hello')
             ->set('contents','World')
-            ->render();        
-        
-        var_dump($r);
+            ->render();
+
         file_put_contents('/tmp/templateBlockMultiDataOutput.test',$r);
         $this->assertFileEquals('/tmp/templateBlockMultiDataOutput.test', 'templateBlockMultiDataOutput');
     }
