@@ -104,7 +104,7 @@ class AcsViewTest extends PHPUnit_Framework_TestCase {
         $this->v->body = 'World';
 
         file_put_contents('/tmp/templateOutput2.test',$this->v->render());
-        $this->assertFileNotEquals('/tmp/templateOutput2.test', 'templateOutput1');
+        $this->assertFileEquals('/tmp/templateOutput2.test', 'templateOutput2');
     }
 
     public function testBlocks() {
@@ -121,15 +121,19 @@ class AcsViewTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals('Hello World',$this->v->block('x'));
     }
 
-    public function testBlocksMulti() {
+    public function testExpand() {
         $this->v->setPath('../templates/');
-        $r = $this->v->load('bodyBlockMultiData')
-            ->set('menu_body',array('test1','teste2'))
-            ->set('title','hello')
-            ->set('contents','World')
-            ->render();
+        $r = $this->v->load('bodyBlockExpand')->set('word','World')->render();
 
-        file_put_contents('/tmp/templateBlockMultiDataOutput.test',$r);
-        $this->assertFileEquals('/tmp/templateBlockMultiDataOutput.test', 'templateBlockMultiDataOutput');
+        file_put_contents('/tmp/templateOutputExpand.test',$r);
+        $this->assertFileEquals('/tmp/templateOutputExpand.test', 'templateOutputExpand');
+    }
+
+    public function textSetMultiVars() {
+        $this->v->setPath('../templates/');
+        $r = $this->v->load('index')->set(array('title' => 'Hello','body' => 'World'))->render();
+
+        file_put_contents('/tmp/templateOutput2.test',$r);
+        $this->assertFileNotEquals('/tmp/templateOutput2.test', 'templateOutput2');
     }
 }

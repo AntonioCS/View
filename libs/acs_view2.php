@@ -38,12 +38,51 @@ class acs_view {
 
 
     /**
+    * Array for the blocks contents
+    *
+    * @var array
+    */
+    private $_blocks = array();
+
+    /**
+    * @var array
+    */
+    private $_blocksOrder = array();
+
+    /**
+    * @var array
+    */
+    private $_blocksAppend = array();
+
+    /**
+    * @var array
+    */
+    private $_blocksFilters = array();
+
+    /**
+    * @var array
+    */
+    private $_blocksPriority = array();
+
+    /**
+    * Hold the name of the template to expand from
+    *
+    * @var string
+    */
+    private $_expands = null;
+
+    /**
     * Global path for the views/templates
     *
     * @var string
     */
     public static $PATH = 'tpls/';
 
+    /**
+    * Global extension for the view/templates
+    *
+    * @var mixed
+    */
     public static $EXT = 'tpl.php';
 
     /**
@@ -215,13 +254,19 @@ class acs_view {
     /**
     * Set an item on the _data array
     *
-    * @param mixed $item
+    * @param mixed $item - Can be an array to set in one call multiple variables in the view
     * @param mixed $value
     *
     * @return instance
     */
-    public function set($item,$value) {
-        $this->_data[$item] = $value;
+    public function set($item,$value = null) {
+        if (is_array($item)) {
+            foreach ($item as $k=>$v)
+                $this->set($k,$v);
+        }
+        else
+            $this->_data[$item] = $value;
+
         return $this;
     }
 
@@ -247,52 +292,31 @@ class acs_view {
         require($this->getView());
         $buffer = ob_get_clean();
 
+        if (($e = $this->getExpands()) != null) {
+            $buffer = $this->clearExpands()->load($e)->render();
+        }
+
         $this->isRendered();
 
         return $buffer;
     }
 
-
     /**
-    * Array for the blocks contents
+    * Start a block
     *
-    * @var array
+    * @param string $bname
+    * @param bool $append
+    * @param int $priority - Lever of priority of this block in relation to the others
+    * @param mixed $filters - Array of functions to call on the block (when ended) - @TODO Implement this
     */
-    private $_blocks = array();
-
-    private $_blocksOrder = array();
-    private $_blocksAppend = array();
-    private $_blocksFilters = array();
-
-    /**
-    * Place holder for the value (in blocks)
-    *
-    * @var string
-    */
-    private $_blocksValuePlaceHolder = '[_value_]';
-
-    /**
-    * Place holder for the index (in blocks)
-    *
-    * @var string
-    */
-    private $_blocksKeyPlaceHolder = '[_key_]';
-
-    public function __value() {
-        return $this->_blocksValuePlaceHolder;
-    }
-
-    public function __key() {
-        return $this->_blocksKeyPlaceHolder;
-    }
-
-    private $_expands = null;
-
-    public function blockStart($bname, $append = false, $filters = null) {
+    public function blockStart($bname, $append = false, $priority = 1, $filters = null) {
         array_push($this->_blocksOrder,$bname);
 
         if ($append)
             $this->_blocksAppend[$bname] = true;
+
+        $this->_blocksPriority[$bname] = (int)$priority;
+
 
         if ($filters)
             $this->_blocksFilters[$bname] = $filters;
@@ -300,37 +324,66 @@ class acs_view {
         ob_start();
     }
 
+    /**
+    * End the block and echo it's contents
+    *
+    */
     public function blockEnd() {
         $buffer = ob_get_clean();
         $bname = array_shift($this->_blocksOrder);
+        $bpri = $this->_blocksPriority[$bname];
 
-        if ($this->get($bname) != null) {
-            $newBuffer = array();
-            $bk = $this->__key();
-            $bv = $this->__value();
-
-            foreach((array)$this->get($bname) as $k => $v) {
-                $newBuffer[] = str_replace(array($bk,$bv),array($k,$v),$buffer);
-            }
-
-            $buffer = implode('',$newBuffer);
+        if (!isset($this->_blocks[$bname])) {
+            $this->_blocks[$bname][$bpri] = $buffer;
         }
 
+        elseif (isset($this->_blocksAppend[$bname])) {
+            if (isset($this->_blocks[$bname][$bpri]))
+                $this->_blocks[$bname][$bpri] .= $buffer;
+            else
+                $this->_blocks[$bname][$bpri] = $buffer;
+        }
 
-        if (!isset($this->_blocks[$bname]))
-            $this->_blocks[$bname] = $buffer;
-        elseif (isset($this->_blocksAppend[$bname]))
-            $this->_blocks[$bname] .= $buffer;
-
-        echo $this->_blocks[$bname];
+        //to prevent code duplication
+        echo $this->block($bname);
     }
 
+    /**
+    * Return blocks content by highest priority
+    *
+    * @param string $bname Block name
+    */
     public function block($bname) {
-        return isset($this->_blocks[$bname]) ? $this->_blocks[$bname] : null;
+        return isset($this->_blocks[$bname]) ? implode('',array_reverse($this->_blocks[$bname])) : null;
     }
 
+    /**
+    * Set the template the current template is expanding
+    *
+    * @param string $template
+    */
     public function expands($template) {
+        if ($this->_expands)
+            throw new Exception('Double expanding');
+
         $this->_expands = $template;
+    }
+
+    /**
+    * Get the expanding template set by the expands() method
+    *
+    */
+    public function getExpands() {
+        return $this->_expands;
+    }
+
+    /**
+    * Clear the expand property
+    *
+    */
+    public function clearExpands() {
+        $this->_expands = null;
+        return $this;
     }
 }
 
