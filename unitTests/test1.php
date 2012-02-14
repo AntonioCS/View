@@ -129,11 +129,15 @@ class AcsViewTest extends PHPUnit_Framework_TestCase {
         $this->assertFileEquals('/tmp/templateOutputExpand.test', 'templateOutputExpand');
     }
 
-    public function textSetMultiVars() {
+    public function testSetMultiVars() {
         $this->v->setPath('../templates/');
         $r = $this->v->load('index')->set(array('title' => 'Hello','body' => 'World'))->render();
 
         file_put_contents('/tmp/templateOutput2.test',$r);
-        $this->assertFileNotEquals('/tmp/templateOutput2.test', 'templateOutput2');
+        $this->assertFileEquals('/tmp/templateOutput2.test', 'templateOutput2');
+    }
+
+    public function testMultiExpand() {
+
     }
 }
