@@ -210,7 +210,6 @@ class acs_view {
         return $this;
     }
 
-
     /**
     * Set the path to the view in the private property _view
     *
