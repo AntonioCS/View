@@ -1,0 +1,14 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<title>Hello</title>
+<script type="text/javascript" src="example1.js"></script>
+<script type="text/javascript" src="example2.js"></script>
+<script type="text/javascript" src="example4.js"></script>
+</head>
+<body>
+Hello 
+And more stuff!!
+Other contents
+</body>
+</html>

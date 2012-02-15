@@ -138,6 +138,25 @@ class AcsViewTest extends PHPUnit_Framework_TestCase {
     }
 
     public function testMultiExpand() {
+        $this->v->setPath('../templates/');
+        $r = $this->v->load('bodyBlockMultiExpand')->set(array('title' => 'Hello','body' => 'World'))->render();
 
+        file_put_contents('/tmp/templateOutputMultiExpand.test',$r);
+
+        $this->assertFileEquals('/tmp/templateOutputMultiExpand.test', 'templateOutputMultiExpand');
+    }
+
+    public function testBlockPriority() {
+        ob_start();
+        $this->v->blockStart('test');
+        echo 'Hello';
+        $this->v->blockEnd();
+
+        $this->v->blockStart('test',true,2);
+        echo 'World';
+        $this->v->blockEnd();
+        ob_end_clean();
+
+        $this->assertEquals('WorldHello',$this->v->block('test'));
     }
 }
