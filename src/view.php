@@ -1,7 +1,7 @@
 <?php
 
 
-class acs_view {
+class view {
 
     /**
     * Array that holds the data for the view
@@ -90,7 +90,7 @@ class acs_view {
     *
     * @param string|null $view  - Relative/Absolute path to the view/template
     * @param array|null $config - Config set up for the instance
-    * @return acs_view
+    * @return instance
     */
     public function __construct($view = null, $config = null) {
         $ext = null;
@@ -118,7 +118,7 @@ class acs_view {
     * @param string $view
     * @return instance
     *
-    * @throws acs_viewExceptionNoPath, acs_viewExceptionExtension, acs_viewExceptionViewNotFound
+    * @throws viewExceptionNoPath, viewExceptionExtension, viewExceptionViewNotFound
     */
     public function load($view) {
         $paths = $this->getPath();
@@ -127,10 +127,10 @@ class acs_view {
         $viewPath = null;
 
         if (empty($paths))
-            throw new acs_viewExceptionNoPath();
+            throw new viewExceptionNoPath();
 
         if (empty($ext))
-            throw new acs_viewExceptionExtension();
+            throw new viewExceptionExtension();
 
         foreach ((array) $paths as $path) {
            $testPath = $path . $view . '.' . $ext;
@@ -142,7 +142,7 @@ class acs_view {
         }
 
         if (!$viewPath)
-            throw new acs_viewExceptionViewNotFound($testPath);
+            throw new viewExceptionViewNotFound($testPath);
 
         $this->setView($viewPath);
 
@@ -386,6 +386,6 @@ class acs_view {
     }
 }
 
-class acs_viewExceptionExtension extends Exception {}
-class acs_viewExceptionNoPath extends Exception {}
-class acs_viewExceptionViewNotFound extends Exception {}
+class viewExceptionExtension extends Exception {}
+class viewExceptionNoPath extends Exception {}
+class viewExceptionViewNotFound extends Exception {}

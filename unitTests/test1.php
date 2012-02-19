@@ -7,23 +7,23 @@
 if (function_exists('xdebug_disable'))
     xdebug_disable();
 
-require('../libs/acs_view2.php');
+require('../src/view.php');
 
 
-class AcsViewTest extends PHPUnit_Framework_TestCase {
+class ViewTest extends PHPUnit_Framework_TestCase {
 
     protected $v;
 
     protected function setUp() {
-        $this->v = new acs_view();
+        $this->v = new view();
     }
 
     public function testCreatesInstance() {
-        $this->assertInstanceOf('acs_view',$this->v);
+        $this->assertInstanceOf('view',$this->v);
     }
 
     public function testHasPATH() {
-        $this->assertClassHasStaticAttribute('PATH', 'acs_view');
+        $this->assertClassHasStaticAttribute('PATH', 'view');
     }
 
     public function testSetConfigGetSetPath() {
@@ -45,14 +45,14 @@ class AcsViewTest extends PHPUnit_Framework_TestCase {
     }
 
     /**
-    * @expectedException acs_viewExceptionViewNotFound
+    * @expectedException viewExceptionViewNotFound
     */
     public function testViewLoadException() {
         $this->v->load('index');
     }
 
     /**
-    * @expectedException acs_viewExceptionNoPath
+    * @expectedException viewExceptionNoPath
     */
     public function testViewLoadExceptionPath() {
         $this->v->setPath('');
@@ -60,7 +60,7 @@ class AcsViewTest extends PHPUnit_Framework_TestCase {
     }
 
     /**
-    * @expectedException acs_viewExceptionExtension
+    * @expectedException viewExceptionExtension
     */
     public function testViewLoadExceptionExt() {
         $this->v->setExt('');
@@ -69,13 +69,13 @@ class AcsViewTest extends PHPUnit_Framework_TestCase {
 
     public function testSuccessfulLoad() {
         $this->v->setPath('../templates/');
-        $this->assertInstanceOf('acs_view',$this->v->load('index'));
+        $this->assertInstanceOf('view',$this->v->load('index'));
     }
 
     public function testSuccessfulLoadPATH() {
-        acs_view::$PATH = '../templates/';
-        $v = new acs_view();
-        $this->assertInstanceOf('acs_view',$v->load('index'));
+        view::$PATH = '../templates/';
+        $v = new view();
+        $this->assertInstanceOf('view',$v->load('index'));
     }
 
     public function testGetSetData() {
@@ -93,7 +93,7 @@ class AcsViewTest extends PHPUnit_Framework_TestCase {
         $this->v->load('index');
 
         file_put_contents('/tmp/templateOutput1.test',$this->v->render());
-        $this->assertFileEquals('/tmp/templateOutput1.test', 'templateOutput1');
+        $this->assertFileEquals('/tmp/templateOutput1.test', 'expected_results/templateOutput1');
     }
 
     public function testRenderWithData() {
@@ -104,7 +104,7 @@ class AcsViewTest extends PHPUnit_Framework_TestCase {
         $this->v->body = 'World';
 
         file_put_contents('/tmp/templateOutput2.test',$this->v->render());
-        $this->assertFileEquals('/tmp/templateOutput2.test', 'templateOutput2');
+        $this->assertFileEquals('/tmp/templateOutput2.test', 'expected_results/templateOutput2');
     }
 
     public function testBlocks() {
@@ -126,7 +126,7 @@ class AcsViewTest extends PHPUnit_Framework_TestCase {
         $r = $this->v->load('bodyBlockExpand')->set('word','World')->render();
 
         file_put_contents('/tmp/templateOutputExpand.test',$r);
-        $this->assertFileEquals('/tmp/templateOutputExpand.test', 'templateOutputExpand');
+        $this->assertFileEquals('/tmp/templateOutputExpand.test', 'expected_results/templateOutputExpand');
     }
 
     public function testSetMultiVars() {
@@ -134,7 +134,7 @@ class AcsViewTest extends PHPUnit_Framework_TestCase {
         $r = $this->v->load('index')->set(array('title' => 'Hello','body' => 'World'))->render();
 
         file_put_contents('/tmp/templateOutput2.test',$r);
-        $this->assertFileEquals('/tmp/templateOutput2.test', 'templateOutput2');
+        $this->assertFileEquals('/tmp/templateOutput2.test', 'expected_results/templateOutput2');
     }
 
     public function testMultiExpand() {
@@ -143,7 +143,7 @@ class AcsViewTest extends PHPUnit_Framework_TestCase {
 
         file_put_contents('/tmp/templateOutputMultiExpand.test',$r);
 
-        $this->assertFileEquals('/tmp/templateOutputMultiExpand.test', 'templateOutputMultiExpand');
+        $this->assertFileEquals('/tmp/templateOutputMultiExpand.test', 'expected_results/templateOutputMultiExpand');
     }
 
     public function testBlockPriority() {
