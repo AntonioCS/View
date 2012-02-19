@@ -12,7 +12,7 @@ A simple template system which supports:
 Quick example of usage:
 
     acs_view::$PATH = 'templates/';
-    $v = new acs_view();
+    $v = new view();
     $v->load('index');
     $v->title = 'hello';
     echo $v->render();
