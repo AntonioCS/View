@@ -1,6 +1,0 @@
-
-- Create set and get for variables - DONE
-- Create inheritance in templates - DONE
-- Create reusable blocks - Done (needs tests) 
-- Allow partial views to be called (not the same as blocks)
-- Allow way of setting multiple variables in the view (basically allow the set() method to receive an array) - DONE
