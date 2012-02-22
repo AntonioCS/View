@@ -384,6 +384,18 @@ class view {
         $this->_expands = null;
         return $this;
     }
+
+    /**
+    * Create a new instance of this class and return it
+    *
+    * @param string $template Template to load
+    *
+    * @return view
+    */
+    public function subView($template = null) {
+        $class = __CLASS__;
+        return new $class($template, $this->_config);
+    }
 }
 
 class viewExceptionExtension extends Exception {}
