@@ -392,9 +392,9 @@ class view {
     *
     * @return view
     */
-    public function subView($template = null) {
+    public function subView($template = null, $config = null) {
         $class = __CLASS__;
-        return new $class($template, $this->_config);
+        return new $class($template, $config ? $config : $this->_config);
     }
 }
 
