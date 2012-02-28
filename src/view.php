@@ -272,7 +272,7 @@ class view {
     /**
     * Return an item from the _data array
     *
-    * @param mixed $item Key name to get the value from
+    * @param string $item Key name to get the value from
     * @param mixed $defaultValue A default value to return in case there must be something returned
     *
     * @return mixed
