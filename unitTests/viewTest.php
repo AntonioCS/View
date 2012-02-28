@@ -82,6 +82,10 @@ class ViewTest extends PHPUnit_Framework_TestCase {
         $this->v->bla = 'teste';
         $this->assertEquals($this->v->bla,'teste');
     }
+    
+    public function testGetDefaultParam() {
+        $this->assertEquals($this->v->get('empty','hello'),'hello');
+    }
 
     public function testGetSetDataDirectCall() {
         $this->v->set('bla','teste');
