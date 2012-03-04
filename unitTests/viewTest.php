@@ -14,6 +14,15 @@ class ViewTest extends PHPUnit_Framework_TestCase {
 
     protected $v;
 
+
+    public function compareFilesNoEnters($file1,$file2) {
+        $f1 = str_replace(array("\r\n","\n"), '',file_get_contents($file1));
+        $f2 = str_replace(array("\r\n","\n"), '',file_get_contents($file2));
+
+        $this->assertEquals($f1,$f2);
+    }
+
+
     protected function setUp() {
         $this->v = new view();
     }
@@ -68,12 +77,12 @@ class ViewTest extends PHPUnit_Framework_TestCase {
     }
 
     public function testSuccessfulLoad() {
-        $this->v->setPath('../templates/');
+        $this->v->setPath('templates/');
         $this->assertInstanceOf('view',$this->v->load('index'));
     }
 
     public function testSuccessfulLoadPATH() {
-        view::$PATH = '../templates/';
+        view::$PATH = 'templates/';
         $v = new view();
         $this->assertInstanceOf('view',$v->load('index'));
     }
@@ -82,7 +91,7 @@ class ViewTest extends PHPUnit_Framework_TestCase {
         $this->v->bla = 'teste';
         $this->assertEquals($this->v->bla,'teste');
     }
-    
+
     public function testGetDefaultParam() {
         $this->assertEquals($this->v->get('empty','hello'),'hello');
     }
@@ -93,7 +102,7 @@ class ViewTest extends PHPUnit_Framework_TestCase {
     }
 
     public function testRender() {
-        $this->v->setPath('../templates/');
+        $this->v->setPath('templates/');
         $this->v->load('index');
 
         file_put_contents('/tmp/templateOutput1.test',$this->v->render());
@@ -101,7 +110,7 @@ class ViewTest extends PHPUnit_Framework_TestCase {
     }
 
     public function testRenderWithData() {
-        $this->v->setPath('../templates/');
+        $this->v->setPath('templates/');
         $this->v->load('index');
 
         $this->v->title = 'Hello';
@@ -112,42 +121,45 @@ class ViewTest extends PHPUnit_Framework_TestCase {
     }
 
     public function testBlocks() {
-        $this->v->setPath('../templates/');
+        $this->v->setPath('templates/');
         $this->v->load('bodyBlock')->render();
 
         $this->assertEquals('Hello ',$this->v->block('x'));
     }
 
     public function testBlocks2() {
-        $this->v->setPath('../templates/');
+        $this->v->setPath('templates/');
         $r = $this->v->load('bodyBlock')->set('word','World')->render();
 
         $this->assertEquals('Hello World',$this->v->block('x'));
     }
 
     public function testExpand() {
-        $this->v->setPath('../templates/');
+        $this->v->setPath('templates/');
         $r = $this->v->load('bodyBlockExpand')->set('word','World')->render();
 
         file_put_contents('/tmp/templateOutputExpand.test',$r);
-        $this->assertFileEquals('/tmp/templateOutputExpand.test', 'expected_results/templateOutputExpand');
+        //$this->assertFileEquals('expected_results/templateOutputExpand','/tmp/templateOutputExpand.test');
+        $this->compareFilesNoEnters('expected_results/templateOutputExpand','/tmp/templateOutputExpand.test');
     }
 
     public function testSetMultiVars() {
-        $this->v->setPath('../templates/');
+        $this->v->setPath('templates/');
         $r = $this->v->load('index')->set(array('title' => 'Hello','body' => 'World'))->render();
 
         file_put_contents('/tmp/templateOutput2.test',$r);
-        $this->assertFileEquals('/tmp/templateOutput2.test', 'expected_results/templateOutput2');
+        //$this->assertFileEquals('expected_results/templateOutput2','/tmp/templateOutput2.test' );
+        $this->compareFilesNoEnters('expected_results/templateOutput2','/tmp/templateOutput2.test' );
     }
 
     public function testMultiExpand() {
-        $this->v->setPath('../templates/');
+        $this->v->setPath('templates/');
         $r = $this->v->load('bodyBlockMultiExpand')->set(array('title' => 'Hello','body' => 'World'))->render();
 
         file_put_contents('/tmp/templateOutputMultiExpand.test',$r);
 
-        $this->assertFileEquals('/tmp/templateOutputMultiExpand.test', 'expected_results/templateOutputMultiExpand');
+        //$this->assertFileEquals('expected_results/templateOutputMultiExpand','/tmp/templateOutputMultiExpand.test');
+        $this->compareFilesNoEnters('expected_results/templateOutputMultiExpand','/tmp/templateOutputMultiExpand.test');
     }
 
     public function testBlockPriority() {
