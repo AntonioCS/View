@@ -1,7 +1,7 @@
 <?php
 
 /**
-*  Unit tests for Acs View
+*  Unit tests for View
 */
 
 if (function_exists('xdebug_disable'))
