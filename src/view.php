@@ -90,7 +90,8 @@ class view {
     *
     * @param string|null $view  - Relative/Absolute path to the view/template
     * @param array|null $config - Config set up for the instance
-    * @return instance
+    *
+    * @return view
     */
     public function __construct($view = null, $config = null) {
         $ext = null;
@@ -116,9 +117,10 @@ class view {
     * Set the view to rendered
     *
     * @param string $view
-    * @return instance
     *
-    * @throws viewExceptionNoPath, viewExceptionExtension, viewExceptionViewNotFound
+    * @return view
+    *
+    * @throws NoPathViewException, FileExtensionViewException, ViewNotFoundViewException
     */
     public function load($view) {
         $paths = $this->getPath();
@@ -127,10 +129,10 @@ class view {
         $viewPath = null;
 
         if (empty($paths))
-            throw new viewExceptionNoPath();
+            throw new NoPathViewException();
 
         if (empty($ext))
-            throw new viewExceptionExtension();
+            throw new FileExtensionViewException();
 
         foreach ((array) $paths as $path) {
            $testPath = $path . $view . '.' . $ext;
@@ -142,7 +144,7 @@ class view {
         }
 
         if (!$viewPath)
-            throw new viewExceptionViewNotFound($testPath);
+            throw new ViewNotFoundViewException($testPath);
 
         $this->setView($viewPath);
 
@@ -161,7 +163,7 @@ class view {
     /**
     * Set the view as rendered
     *
-    * @return instance
+    * @return view
     */
     public function isRendered() {
         $this->_hasRendered = true;
@@ -182,7 +184,7 @@ class view {
     *
     * @param string|array $path
     *
-    * @return instance
+    * @return view
     */
     public function setPath($path) {
         $this->_config['path'] = $path;
@@ -203,7 +205,7 @@ class view {
     *
     * @param string $ext
     *
-    * @return instance
+    * @return view
     */
     public function setExt($ext) {
         $this->_config['ext'] = $ext;
@@ -215,7 +217,7 @@ class view {
     *
     * @param string $view Full path to the view
     *
-    * @return instance
+    * @return view
     */
     private function setView($view) {
         $this->_view = $view;
@@ -256,7 +258,7 @@ class view {
     * @param mixed $item - Can be an array to set in one call multiple variables in the view
     * @param mixed $value
     *
-    * @return instance
+    * @return view
     */
     public function set($item,$value = null) {
         if (is_array($item)) {
@@ -283,8 +285,8 @@ class view {
 
     /**
      * Renders the view
-     * if $return is set to true the code will be returned
      *
+     * @return string rendered template
      */
     public function render() {
         ob_start();
@@ -306,10 +308,12 @@ class view {
     * @param string $bname
     * @param bool $append
     * @param int $priority - Lever of priority of this block in relation to the others
-    * @param mixed $filters - Array of functions to call on the block (when ended) - @TODO Implement this
+    * @param mixed $filters - Array of functions to call on the block (when ended)
+    *
     */
     public function blockStart($bname, $append = false, $priority = 1, $filters = null) {
         array_push($this->_blocksOrder,$bname);
+
 
         if ($append)
             $this->_blocksAppend[$bname] = true;
@@ -326,11 +330,36 @@ class view {
     /**
     * End the block and echo it's contents
     *
+    * @throws FilterNotCallableViewException
+    *
     */
     public function blockEnd() {
         $buffer = ob_get_clean();
         $bname = array_shift($this->_blocksOrder);
         $bpri = $this->_blocksPriority[$bname];
+
+        if (isset($this->_blocksFilters[$bname])) {
+            foreach ($this->_blocksFilters[$bname] as $filter) {
+                if (is_callable($filter)) {
+                    $buffer = $filter($buffer);
+                }
+                else {
+                    //Format should be array('function',array('option1','option2'...)) I will then unshift $buffer into the array
+                    if (is_array($filter)) {
+                        $filter_ = $filter[0];
+                        $parameters = $filter[1];
+
+                        array_unshift($parameters, $buffer);
+
+                        $buffer = call_user_func_array($filter_, $parameters);
+                    }
+                    else
+                        throw new FilterNotCallableViewException;
+                }
+            }
+        }
+
+
 
         if (!isset($this->_blocks[$bname])) {
             $this->_blocks[$bname][$bpri] = $buffer;
@@ -398,6 +427,10 @@ class view {
     }
 }
 
-class viewExceptionExtension extends Exception {}
-class viewExceptionNoPath extends Exception {}
-class viewExceptionViewNotFound extends Exception {}
+/**
+ * Class exceptions
+ */
+class FileExtensionViewException extends Exception {}
+class NoPathViewException extends Exception {}
+class ViewNotFoundViewException extends Exception {}
+class FilterNotCallableViewException extends Exception {}
