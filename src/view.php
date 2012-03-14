@@ -120,9 +120,12 @@ class view {
     *
     * @return view
     *
-    * @throws NoPathViewException, FileExtensionViewException, ViewNotFoundViewException
+    * @throws NoPathViewException
+    * @throws FileExtensionViewException
+    * @throws ViewNotFoundViewException
     */
     public function load($view) {
+        $view = str_replace(chr(0), '', $view); //Prevent Poison Null Byte
         $paths = $this->getPath();
         $ext = $this->getExt();
         $testPath = null;
@@ -307,13 +310,12 @@ class view {
     *
     * @param string $bname
     * @param bool $append
-    * @param int $priority - Lever of priority of this block in relation to the others
+    * @param int $priority - Lever of priority of this block in relation to the others. Default 1
     * @param mixed $filters - Array of functions to call on the block (when ended)
     *
     */
     public function blockStart($bname, $append = false, $priority = 1, $filters = null) {
         array_push($this->_blocksOrder,$bname);
-
 
         if ($append)
             $this->_blocksAppend[$bname] = true;
@@ -322,7 +324,7 @@ class view {
 
 
         if ($filters)
-            $this->_blocksFilters[$bname] = $filters;
+            $this->_blocksFilters[$bname] = (array)$filters;
 
         ob_start();
     }
@@ -354,12 +356,10 @@ class view {
                         $buffer = call_user_func_array($filter_, $parameters);
                     }
                     else
-                        throw new FilterNotCallableViewException;
+                        throw new FilterNotCallableViewException($filter);
                 }
             }
         }
-
-
 
         if (!isset($this->_blocks[$bname])) {
             $this->_blocks[$bname][$bpri] = $buffer;
