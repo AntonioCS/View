@@ -12,6 +12,9 @@ require('../src/view.php');
 
 class ViewTest extends PHPUnit_Framework_TestCase {
 
+    /**     
+     * @var View\view
+     */
     protected $object;
 
 
@@ -24,7 +27,7 @@ class ViewTest extends PHPUnit_Framework_TestCase {
 
 
     protected function setUp() {
-        $this->object = new view();
+        $this->object = new View\view();
     }
 
     public function testCreatesInstance() {
@@ -82,8 +85,8 @@ class ViewTest extends PHPUnit_Framework_TestCase {
     }
 
     public function testSuccessfulLoadPATH() {
-        view::$PATH = 'templates/';
-        $v = new view();
+        View\view::$CONFIG['path'] = 'templates/';
+        $v = new View\view();
         $this->assertInstanceOf('view',$v->load('index'));
     }
 
