@@ -1,5 +1,6 @@
 <?php
 
+namespace View;
 
 class view {
 
@@ -19,8 +20,28 @@ class view {
                             'ext' => 'tpl.php',
                             'path' => 'tpls/'
                         );
+    
+    /**
+     * Default configurations
+     *
+     * @var array
+     */
+    public static $CONFIG = array(
+        /**
+        * Global extension for the view/templates
+        *
+        * @var mixed
+        */
+        'ext' => 'tpl.php',
 
-
+        /**
+        * Global path for the views/templates
+        *
+        * @var string
+        */
+        'path' => 'tpls/'
+    );
+       
     /**
     * Bool to check if the view has been rendered
     *
@@ -72,26 +93,12 @@ class view {
     private $_expands = null;
 
     /**
-    * Global path for the views/templates
-    *
-    * @var string
-    */
-    public static $PATH = 'tpls/';
-
-    /**
-    * Global extension for the view/templates
-    *
-    * @var mixed
-    */
-    public static $EXT = 'tpl.php';
-
-    /**
     * Construct
     *
     * @param string|null $view  - Relative/Absolute path to the view/template
     * @param array|null $config - Config set up for the instance
     *
-    * @return view
+    * @return \View\view
     */
     public function __construct($view = null, $config = null) {
         $ext = null;
@@ -102,8 +109,8 @@ class view {
             $path = isset($config['path']) ? $config['path'] : self::$PATH;
         }
         else {
-            $ext = self::$EXT;
-            $path = self::$PATH;
+            $ext = self::$CONFIG['ext'];
+            $path = self::$CONFIG['path']; 
         }
 
         $this->setExt($ext);
@@ -118,7 +125,7 @@ class view {
     *
     * @param string $view
     *
-    * @return view
+    * @return \View\view
     *
     * @throws NoPathViewException
     * @throws FileExtensionViewException
@@ -128,6 +135,7 @@ class view {
         $view = str_replace(chr(0), '', $view); //Prevent Poison Null Byte
         $paths = $this->getPath();
         $ext = $this->getExt();
+        
         $testPath = null;
         $viewPath = null;
 
@@ -166,7 +174,7 @@ class view {
     /**
     * Set the view as rendered
     *
-    * @return view
+    * @return \View\view
     */
     public function isRendered() {
         $this->_hasRendered = true;
@@ -187,10 +195,24 @@ class view {
     *
     * @param string|array $path
     *
-    * @return view
+    * @return \View\view
     */
     public function setPath($path) {
         $this->_config['path'] = $path;
+        return $this;
+    }
+    
+    /**
+     * Add a view path to the path list. setPath will only set one path as the main path. This will allow you to add the paths
+     * 
+     * @param string $path
+     * @return \View\view 
+     */
+    public function addPath($path) {
+        if (!is_array($this->_config['path']))
+            $this->_config['path'] = array($this->_config['path']);
+       
+        $this->_config['path'][] = $path;
         return $this;
     }
 
@@ -208,7 +230,7 @@ class view {
     *
     * @param string $ext
     *
-    * @return view
+    * @return \View\view
     */
     public function setExt($ext) {
         $this->_config['ext'] = $ext;
@@ -220,7 +242,7 @@ class view {
     *
     * @param string $view Full path to the view
     *
-    * @return view
+    * @return \View\view
     */
     private function setView($view) {
         $this->_view = $view;
@@ -261,7 +283,7 @@ class view {
     * @param mixed $item - Can be an array to set in one call multiple variables in the view
     * @param mixed $value
     *
-    * @return view
+    * @return \View\view
     */
     public function set($item,$value = null) {
         if (is_array($item)) {
@@ -419,7 +441,7 @@ class view {
     *
     * @param string $template Template to load
     *
-    * @return view
+    * @return \View\view
     */
     public function subView($template = null, $config = null) {
         $class = __CLASS__;
@@ -430,7 +452,7 @@ class view {
 /**
  * Class exceptions
  */
-class FileExtensionViewException extends Exception {}
-class NoPathViewException extends Exception {}
-class ViewNotFoundViewException extends Exception {}
-class FilterNotCallableViewException extends Exception {}
+class FileExtensionViewException extends \Exception {}
+class NoPathViewException extends \Exception {}
+class ViewNotFoundViewException extends \Exception {}
+class FilterNotCallableViewException extends \Exception {}
