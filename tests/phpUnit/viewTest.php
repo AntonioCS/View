@@ -7,7 +7,7 @@
 if (function_exists('xdebug_disable'))
     xdebug_disable();
 
-require('../src/view.php');
+require('../../src/view.php');
 
 
 class ViewTest extends PHPUnit_Framework_TestCase {
@@ -31,11 +31,7 @@ class ViewTest extends PHPUnit_Framework_TestCase {
     }
 
     public function testCreatesInstance() {
-        $this->assertInstanceOf('view',$this->object);
-    }
-
-    public function testHasPATH() {
-        $this->assertClassHasStaticAttribute('PATH', 'view');
+        $this->assertInstanceOf('View\view',$this->object);
     }
 
     public function testSetConfigGetSetPath() {
@@ -57,14 +53,14 @@ class ViewTest extends PHPUnit_Framework_TestCase {
     }
 
     /**
-    * @expectedException ViewNotFoundViewException
+    * @expectedException View\ViewNotFoundViewException
     */
     public function testViewLoadException() {
         $this->object->load('index');
     }
 
     /**
-    * @expectedException NoPathViewException
+    * @expectedException View\NoPathViewException
     */
     public function testViewLoadExceptionPath() {
         $this->object->setPath('');
@@ -72,7 +68,7 @@ class ViewTest extends PHPUnit_Framework_TestCase {
     }
 
     /**
-    * @expectedException FileExtensionViewException
+    * @expectedException View\FileExtensionViewException
     */
     public function testViewLoadExceptionExt() {
         $this->object->setExt('');
@@ -81,13 +77,13 @@ class ViewTest extends PHPUnit_Framework_TestCase {
 
     public function testSuccessfulLoad() {
         $this->object->setPath('templates/');
-        $this->assertInstanceOf('view',$this->object->load('index'));
+        $this->assertInstanceOf('View\view',$this->object->load('index'));
     }
 
     public function testSuccessfulLoadPATH() {
         View\view::$CONFIG['path'] = 'templates/';
         $v = new View\view();
-        $this->assertInstanceOf('view',$v->load('index'));
+        $this->assertInstanceOf('View\view',$v->load('index'));
     }
 
     public function testGetSetData() {
@@ -111,6 +107,13 @@ class ViewTest extends PHPUnit_Framework_TestCase {
         file_put_contents('/tmp/templateOutput1.test',$this->object->render());
         $this->assertFileEquals('/tmp/templateOutput1.test', 'expected_results/templateOutput1');
     }
+    
+    public function testRenderTplAsParam() {
+        $this->object->setPath('templates/');        
+
+        file_put_contents('/tmp/templateOutput1.test',$this->object->render('index'));
+        $this->assertFileEquals('/tmp/templateOutput1.test', 'expected_results/templateOutput1');
+    }
 
     public function testRenderWithData() {
         $this->object->setPath('templates/');
@@ -120,6 +123,14 @@ class ViewTest extends PHPUnit_Framework_TestCase {
         $this->object->body = 'World';
 
         file_put_contents('/tmp/templateOutput2.test',$this->object->render());
+        $this->assertFileEquals('/tmp/templateOutput2.test', 'expected_results/templateOutput2');
+    }
+
+    public function testRenderWithDataAsParams() {
+        $this->object->setPath('templates/');
+        $this->object->load('index');
+
+        file_put_contents('/tmp/templateOutput2.test',$this->object->render(null, array('title' => 'Hello', 'body' => 'World')));
         $this->assertFileEquals('/tmp/templateOutput2.test', 'expected_results/templateOutput2');
     }
 
@@ -211,7 +222,7 @@ class ViewTest extends PHPUnit_Framework_TestCase {
     }
 
     /**
-    * @expectedException FilterNotCallableViewException
+    * @expectedException View\FilterNotCallableViewException
     */
     public function testBlocksFiltersException() {
         ob_start();
@@ -219,5 +230,35 @@ class ViewTest extends PHPUnit_Framework_TestCase {
         echo 'HELLO';
         $this->object->blockEnd();
         ob_end_clean();
+    }
+    
+    /**
+     * @group subview
+     */
+    public function testSubView() {                                      
+        $this->object->load('viewCallSubview');
+        $r = $this->object->render();
+        
+        file_put_contents('/tmp/templateOutputSubview.test',$r);        
+        $this->compareFilesNoEnters('expected_results/templateOutputSubview','/tmp/templateOutputSubview.test');
+    }
+    
+    public function testStaticGenerateView() {
+        $this->assertInstanceOf('View\view',  View\view::generate());
+    }
+    
+    public function testStaticGenerateViewWithTemplate() {
+        $v = View\view::generate('index');
+        
+        file_put_contents('/tmp/templateOutput1.test',$v->render());
+        $this->assertFileEquals('/tmp/templateOutput1.test', 'expected_results/templateOutput1');
+    }
+    
+    public function testStaticGenerateViewWithTemplateAndData() {                
+        file_put_contents(
+                '/tmp/templateOutput2.test',
+                View\view::generate('index', null, array('title' => 'Hello', 'body' => 'World'))->render()
+        );
+        $this->assertFileEquals('/tmp/templateOutput2.test', 'expected_results/templateOutput2');
     }
 }
