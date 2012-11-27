@@ -91,6 +91,26 @@ class view {
     * @var string
     */
     private $_expands = null;
+    
+    
+    /**
+     * Generate a view and return it
+     * 
+     * @param string $view
+     * @param array $config
+     * @param array $data
+     * 
+     * @return \self
+     */
+    public static function generate($view = null, $config = null, $data = array()) {
+        $v = new self($view,$config);
+        
+        if (!empty($data)) {
+            $v->set($data);
+        }
+        
+        return $v;        
+    }
 
     /**
     * Construct
@@ -266,7 +286,7 @@ class view {
      */
     public function __set($item, $value) {
         $this->set($item,$value);
-    }
+    }    
 
     /**
     * Call get() method
@@ -275,6 +295,15 @@ class view {
     */
     public function __get($item) {
         return $this->get($item);
+    }
+    
+    /**
+     * Return rendered view
+     * 
+     * @return string
+     */
+    public function __toString() {
+        return $this->render();
     }
 
     /**
@@ -310,10 +339,21 @@ class view {
 
     /**
      * Renders the view
+     * 
+     * @param string $tpl Set a template to render
+     * @param array $data
      *
      * @return string rendered template
      */
-    public function render() {
+    public function render($tpl = null, $data = array()) {
+        if ($tpl) {
+            $this->load($tpl);            
+        }
+        
+        if (!empty($data)) {
+            $this->set($data);
+        }        
+        
         ob_start();
         require($this->getView());
         $buffer = ob_get_clean();
@@ -440,12 +480,19 @@ class view {
     * Create a new instance of this class and return it
     *
     * @param string $template Template to load
+    * @param array $data
+    * @param array $config
     *
     * @return \View\view
     */
-    public function subView($template = null, $config = null) {
+    public function subView($template = null, $data = array(), $config = null) {
         $class = __CLASS__;
-        return new $class($template, $config ? $config : $this->_config);
+        $v = new $class($template, $config ? $config : $this->_config);
+        if (!empty($data)) {
+            $v->set($data);
+        }
+        
+        return $v;
     }
 }
 
