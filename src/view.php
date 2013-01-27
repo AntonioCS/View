@@ -153,20 +153,23 @@ class view {
     */
     public function load($view) {
         $view = str_replace(chr(0), '', $view); //Prevent Poison Null Byte
+        
         $paths = $this->getPath();
         $ext = $this->getExt();
-        
+                
+        if (empty($paths)) {
+            throw new NoPathViewException();
+        }
+
+        if (empty($ext)) {
+            throw new FileExtensionViewException();
+        }
+
         $testPath = null;
         $viewPath = null;
 
-        if (empty($paths))
-            throw new NoPathViewException();
-
-        if (empty($ext))
-            throw new FileExtensionViewException();
-
         foreach ((array) $paths as $path) {
-           $testPath = $path . $view . '.' . $ext;
+           $testPath = "$path$view.$ext";
 
            if (file_exists($testPath)) {
                $viewPath = $testPath;
@@ -174,9 +177,10 @@ class view {
            }
         }
 
-        if (!$viewPath)
+        if (!$viewPath) {
             throw new ViewNotFoundViewException($testPath);
-
+        }
+        
         $this->setView($viewPath);
 
         return $this;
