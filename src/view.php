@@ -2,25 +2,8 @@
 
 namespace View;
 
-class view {
+class view {        
 
-    /**
-    * Array that holds the data for the view
-    *
-    * @var array
-    */
-    private $_data = array();
-
-    /**
-    * Configurations for this view
-    *
-    * @var array
-    */
-    private $_config = array(
-                            'ext' => 'tpl.php',
-                            'path' => 'tpls/'
-                        );
-    
     /**
      * Default configurations
      *
@@ -39,15 +22,32 @@ class view {
         *
         * @var string
         */
-        'path' => 'tpls/'
+        'path' => 'tpls/'                
     );
+
+    /**
+    * Configurations for this view
+    *
+    * @var array
+    */
+    protected $_config = array(
+                            'ext' => 'tpl.php',
+                            'path' => 'tpls/'                            
+                        );    
+    
+    /**
+    * Array that holds the data for the view
+    *
+    * @var array
+    */
+    protected $_data = array();    
        
     /**
     * Bool to check if the view has been rendered
     *
     * @var bool
     */
-    private $_hasRendered = false;
+    protected $_hasRendered = false;
 
 
     /**
@@ -55,44 +55,42 @@ class view {
     *
     * @var string
     */
-    private $_view = null;
-
+    protected $_view = null;
 
     /**
     * Array for the blocks contents
     *
     * @var array
     */
-    private $_blocks = array();
+    protected $_blocks = array();
 
     /**
     * @var array
     */
-    private $_blocksOrder = array();
+    protected $_blocksOrder = array();
 
     /**
     * @var array
     */
-    private $_blocksAppend = array();
+    protected $_blocksAppend = array();
 
     /**
     * @var array
     */
-    private $_blocksFilters = array();
+    protected $_blocksFilters = array();
 
     /**
     * @var array
     */
-    private $_blocksPriority = array();
+    protected $_blocksPriority = array();
 
     /**
     * Hold the name of the template to expand from
     *
     * @var string
     */
-    private $_expands = null;
-    
-    
+    protected $_expands = null;
+        
     /**
      * Generate a view and return it
      * 
@@ -136,10 +134,19 @@ class view {
         $this->setExt($ext);
         $this->setPath($path);
 
-        if ($view)
+        if ($view) {
             $this->load($view);
+        }
     }
-
+    
+    /**
+     * 
+     * @return bool
+     */
+    public function getEvalState() {
+        return $this->_config['useEval'];
+    }
+    
     /**
     * Set the view to rendered
     *
@@ -320,11 +327,16 @@ class view {
     */
     public function set($item,$value = null) {
         if (is_array($item)) {
-            foreach ($item as $k=>$v)
+            foreach ($item as $k=>$v) {
                 $this->set($k,$v);
+            }
         }
-        else
+        else {
+            if (property_exists($this, $item)) {
+                unset($this->$item);
+            }
             $this->_data[$item] = $value;
+        }
 
         return $this;
     }
@@ -338,7 +350,8 @@ class view {
     * @return mixed
     */
     public function get($item, $defaultValue = null) {
-        return isset($this->_data[$item]) ? $this->_data[$item] : $defaultValue;
+        $res = isset($this->_data[$item]) ? $this->_data[$item] : $defaultValue;
+        return $res;
     }
 
     /**
@@ -356,19 +369,36 @@ class view {
         
         if (!empty($data)) {
             $this->set($data);
-        }        
+        }                        
         
         ob_start();
         require($this->getView());
+        
         $buffer = ob_get_clean();
-
-        if (($e = $this->getExpands()) != null) {
-            $buffer = $this->clearExpands()->load($e)->render();
+        
+        if (($e = $this->getExpands()) !== null) {
+            $buffer = $this->clearExpands()->render($e);
         }
-
+        
+        
         $this->isRendered();
 
         return $buffer;
+    }
+    
+    private function getFile($file) {
+        $key = $file;
+        $contents = null;
+        
+        if (isset(self::$EVALFILES[$key])) {
+            $contents = self::$EVALFILES[$key];
+        }
+        else {
+            $contents = file_get_contents($file);
+            self::$EVALFILES[$key] = $contents;            
+        }
+        
+        return $contents;        
     }
 
     /**
@@ -383,15 +413,17 @@ class view {
     public function blockStart($bname, $append = false, $priority = 1, $filters = null) {
         array_push($this->_blocksOrder,$bname);
 
-        if ($append)
+        if ($append) {
             $this->_blocksAppend[$bname] = true;
-
+        }
+        
         $this->_blocksPriority[$bname] = (int)$priority;
 
 
-        if ($filters)
+        if ($filters) {
             $this->_blocksFilters[$bname] = (array)$filters;
-
+        }
+        
         ob_start();
     }
 
@@ -421,8 +453,9 @@ class view {
 
                         $buffer = call_user_func_array($filter_, $parameters);
                     }
-                    else
+                    else {
                         throw new FilterNotCallableViewException($filter);
+                    }
                 }
             }
         }
@@ -430,12 +463,14 @@ class view {
         if (!isset($this->_blocks[$bname])) {
             $this->_blocks[$bname][$bpri] = $buffer;
         }
-
         elseif (isset($this->_blocksAppend[$bname])) {
-            if (isset($this->_blocks[$bname][$bpri]))
+            
+            if (isset($this->_blocks[$bname][$bpri])) {
                 $this->_blocks[$bname][$bpri] .= $buffer;
-            else
+            }
+            else {
                 $this->_blocks[$bname][$bpri] = $buffer;
+            }
         }
 
         //to prevent code duplication
@@ -457,14 +492,15 @@ class view {
     * @param string $template
     */
     public function expands($template) {
-        if ($this->_expands)
+        if ($this->_expands) {
             throw new Exception('Double expanding');
+        }
 
         $this->_expands = $template;
     }
 
     /**
-    * Get the expanding template set by the expands() method
+    * Get the expanding template set by the expands() method called inside the view
     *
     */
     public function getExpands() {
