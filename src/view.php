@@ -2,7 +2,14 @@
 
 namespace View;
 
-class view {        
+class view {
+    
+    /**
+     * Cache for the contents of the evaled files
+     * 
+     * @var array
+     */
+    public static $EVALFILES = array();
 
     /**
      * Default configurations
@@ -22,7 +29,14 @@ class view {
         *
         * @var string
         */
-        'path' => 'tpls/'                
+        'path' => 'tpls/',
+        
+        /**
+         * Global setting for the use of eval in the render method
+         * 
+         * @var bool
+         */
+        'useEval' => false
     );
 
     /**
@@ -32,7 +46,8 @@ class view {
     */
     protected $_config = array(
                             'ext' => 'tpl.php',
-                            'path' => 'tpls/'                            
+                            'path' => 'tpls/',
+                            'useEval' => false
                         );    
     
     /**
@@ -137,6 +152,16 @@ class view {
         if ($view) {
             $this->load($view);
         }
+    }
+
+    /**
+     * 
+     * @param bool $state
+     * @return \View\view
+     */
+    public function useEval($state = false) {
+        $this->_config['useEval'] = $state;
+        return $this;       
     }
     
     /**
@@ -372,7 +397,15 @@ class view {
         }                        
         
         ob_start();
-        require($this->getView());
+        
+        if (!$this->getEvalState()) {            
+            require($this->getView());            
+        }
+        else {      
+            $file = $this->getFile($this->getView());
+            //$file = file_get_contents($this->getView());
+            eval('?>' . $file);
+        }
         
         $buffer = ob_get_clean();
         
