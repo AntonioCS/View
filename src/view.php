@@ -105,7 +105,7 @@ class view {
     * @var string
     */
     protected $_expands = null;
-        
+    
     /**
      * Generate a view and return it
      * 
@@ -151,8 +151,8 @@ class view {
 
         if ($view) {
             $this->load($view);
-        }
-    }
+        }             
+    }    
 
     /**
      * 
@@ -341,6 +341,15 @@ class view {
     public function __toString() {
         return $this->render();
     }
+    
+    /**
+     * Return rendered view when called as a function
+     * 
+     * @return string
+     */
+    public function __invoke() {
+        return $this->render();
+    }
 
     /**
     * Set an item on the _data array
@@ -375,8 +384,7 @@ class view {
     * @return mixed
     */
     public function get($item, $defaultValue = null) {
-        $res = isset($this->_data[$item]) ? $this->_data[$item] : $defaultValue;
-        return $res;
+        return isset($this->_data[$item]) ? $this->_data[$item] : $defaultValue;        
     }
 
     /**
@@ -394,7 +402,7 @@ class view {
         
         if (!empty($data)) {
             $this->set($data);
-        }                        
+        }            
         
         ob_start();
         
@@ -402,10 +410,9 @@ class view {
             require($this->getView());            
         }
         else {      
-            $file = $this->getFile($this->getView());
-            //$file = file_get_contents($this->getView());
+            $file = $this->getFile($this->getView());            
             eval('?>' . $file);
-        }
+        }        
         
         $buffer = ob_get_clean();
         
@@ -413,12 +420,18 @@ class view {
             $buffer = $this->clearExpands()->render($e);
         }
         
-        
         $this->isRendered();
 
         return $buffer;
     }
     
+    /**
+     * Method to get the file in eval mode
+     * This will also cache the file to make it quicker
+     * 
+     * @param string $file
+     * @return string
+     */
     private function getFile($file) {
         $key = $file;
         $contents = null;
