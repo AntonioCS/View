@@ -2,7 +2,7 @@
 
 namespace View;
 
-class view {
+class View {
     
     /**
      * Cache for the contents of the evaled files
