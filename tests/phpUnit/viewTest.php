@@ -8,7 +8,7 @@ if (function_exists('xdebug_disable'))
     xdebug_disable();
 
 //require('../../src/view.php');
-require('src/view.php');
+require('src/View/View.php');
 
 
 class ViewTest extends PHPUnit_Framework_TestCase {
@@ -30,7 +30,7 @@ class ViewTest extends PHPUnit_Framework_TestCase {
     }
 
     protected function setUp() {        
-        $this->object = new View\view();
+        $this->object = new View\View();
         $this->object->useEval(true);
     }
 
@@ -81,13 +81,13 @@ class ViewTest extends PHPUnit_Framework_TestCase {
 
     public function testSuccessfulLoad() {
         $this->object->setPath($this->_templateDir);
-        $this->assertInstanceOf('View\view',$this->object->load('index'));
+        $this->assertInstanceOf('View\View',$this->object->load('index'));
     }
 
     public function testSuccessfulLoadPATH() {
         View\view::$CONFIG['path'] = $this->_templateDir;
         $v = new View\view();
-        $this->assertInstanceOf('View\view',$v->load('index'));
+        $this->assertInstanceOf('View\View',$v->load('index'));
     }
 
     public function testGetSetData() {
